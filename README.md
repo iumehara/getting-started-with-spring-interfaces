@@ -125,19 +125,48 @@ Now if we start the app up again `./gradlew bootrun` we'll see the same data as 
 However, we've managed to abstract out the data fetching behavior out to a repo!
 
 
-Finally, let's think about additional ways to use the `FakeTodoRepo` in the future.
+That's it for the code that will be committed in this branch, but let's think about additional ways to use the `FakeTodoRepo` in the future.
 If we were to write a `getOne` method to the interface, how would we implement the fake?
 because the method will likely take a parameter, we'd want to test for it as well. We could do that like this.
 
-`src/test/java/com/example/FakeTodoRepo``
-
+`src/test/java/com/example/FakeTodoRepo`
 ```
 public String getOne_returnValue;
+public String getOne_argument_todoId;
 
 @Override
 public String getOne(int todoId) {
+    getOne_argument_todoId = todoId;
     return getOne_returnValue;
 }
+```
+then, in the test, we can check that the correct params were passed from the controller to the repo method.
 
+`src/test/java/com/example/TodosControllerTest`
 ```
+// given a mockController request to '/todos/5'
+
+assertThat(todoRepo.getOne_argument_todoId, equalTo(5))
 ```
+
+Also, if we want to be more careful about setting our fake values, we can make them private, as discussed before.
+
+`src/test/java/com/example/FakeTodoRepo`
+```
+private String getOne_returnValue;
+public void setGetAll_returnValue(List<String> getAll_returnValue) {
+    this.getAll_returnValue = getAll_returnValue;
+}
+
+private int getOne_argument_todoId;
+public int getGetOne_argument_todoId() {
+  return getOne_argument_todoId
+}
+
+@Override
+public String getOne(int todoId) {
+    getOne_argument_todoId = todoId;
+    return getOne_returnValue;
+}
+```
+This comes with the advantage of a safer implementation (can't inadvertently set return values), but with the disadvantage of decreased readability.
